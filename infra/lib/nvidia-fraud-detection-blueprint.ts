@@ -98,7 +98,8 @@ export class NvidiaFraudDetectionBlueprint extends cdk.Stack {
       serviceAccountPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3ReadOnlyAccess')]
     });
 
-    const repoUrl = "https://github.com/aws-samples/sample-financial-fraud-detection-with-nvidia";
+    // TODO: Update this to your repository URL
+    const repoUrl = "https://github.com/aws-samples/TW-sample-financial-fraud-detection-with-nvidia";
 
     const addons = [
       new blueprints.addons.AwsLoadBalancerControllerAddOn(),
@@ -121,7 +122,10 @@ export class NvidiaFraudDetectionBlueprint extends cdk.Stack {
           targetRevision: "main",
           account: this.account,
           region: this.region,
-          bucketName: props.modelBucketName
+          bucketName: props.modelBucketName,
+          image: {
+            imageName: `${this.account}.dkr.ecr.${this.region}.amazonaws.com/triton-fraud-detection:latest`
+          }
         }
       }),
     ];
@@ -155,7 +159,7 @@ export class NvidiaFraudDetectionBlueprint extends cdk.Stack {
               {
                 deviceName: "/dev/xvda",
                 ebs: {
-                  volumeSize: "10Gi",
+                  volumeSize: "100Gi",
                   deleteOnTermination: true
                 }
               }

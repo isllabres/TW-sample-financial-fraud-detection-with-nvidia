@@ -27,7 +27,8 @@
 replicaCount: 1
 
 image:
-  imageName: nvcr.io/nvidia/tritonserver:25.05-py3
+  # Overridden by ArgoCD with ECR URI from CDK bootstrapValues
+  imageName: ""
   pullPolicy: IfNotPresent
   modelRepositoryPath: s3://triton-inference-server-repository/model-repository
   numGpus: 1

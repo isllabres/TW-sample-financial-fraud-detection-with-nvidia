@@ -136,15 +136,15 @@ Login to ECR:
 ```bash
 
 export ECR_REPO=$(echo "${NVIDIA_ECR_URI%%/*}")
-aws ecr get-login-password --region <your-aws-region> | docker login --username AWS --password-stdin $ECR_REPO
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REPO 
 ```
 
 Tag the NVIDIA Image and push it to ECR:
 
 ```bash
 
-docker tag nvcr.io/nvidia/cugraph/financial-fraud-training:2.0.0 $NVIDIA_ECR_URI:latest
-docker push $NVIDIA_ECR_URI:latest
+docker tag nvcr.io/nvidia/cugraph/financial-fraud-training:2.0.0 ${NVIDIA_ECR_URI}:latest
+docker push ${NVIDIA_ECR_URI}:latest
 ```
 
 ### Set up Development Environment in SageMaker Studio
@@ -160,7 +160,7 @@ git clone https://github.com/aws-samples/sample-financial-fraud-detection-with-n
 2. Set up the required conda environment from a terminal within the JupyterLab environment
 
 ```sh
-conda env create -f ./sample-financial-fraud-detection-with-nvidia/conda/notebook_env.yaml
+conda env create -f ./TW-sample-financial-fraud-detection-with-nvidia/conda/notebook_env.yaml
 conda install -y ipykernel -n fraud_blueprint_env
 conda init
 conda activate fraud_blueprint_env

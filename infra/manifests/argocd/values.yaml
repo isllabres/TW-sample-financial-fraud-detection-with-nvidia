@@ -6,7 +6,8 @@ serviceAccount:
   name: triton-sa
 
 image:
-  imageName: nvcr.io/nvidia/tritonserver:25.05-py3
+  # This is overridden by CDK bootstrapValues with the actual ECR URI
+  imageName: "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/triton-fraud-detection:latest"
   pullPolicy: IfNotPresent
   numGpus: 1
 
