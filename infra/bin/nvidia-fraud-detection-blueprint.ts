@@ -1,11 +1,14 @@
 #!/usr/bin/env node
+import * as dotenv from "dotenv";
+dotenv.config(); // Load .env file
+
 import * as cdk from "aws-cdk-lib";
 import { AwsSolutionsChecks } from "cdk-nag";
 import { NvidiaFraudDetectionBlueprint } from "../lib/nvidia-fraud-detection-blueprint";
 import { TarExtractorStack } from "../lib/tar-extractor-stack";
 import { SageMakerExecutionRoleStack } from "../lib/sagemaker-training-role";
 import { SageMakerNotebookRoleStack } from "../lib/sagemaker-notebook-role";
-import { BlueprintECRStack } from "../lib/training-image-repo";
+import { TritonImageBuilderStack } from "../lib/triton-image-builder";
 
 const app = new cdk.App();
 
@@ -47,14 +50,6 @@ const sagemakerNotebookRole = new SageMakerNotebookRoleStack(
   },
 );
 
-const trainingImageRepo = new BlueprintECRStack(
-  app,
-  "NvidiaFraudDetectionTrainingImageRepo",
-  {
-    env: env,
-  },
-);
-
 const mainStack = new NvidiaFraudDetectionBlueprint(
   app,
   "NvidiaFraudDetectionBlueprint",
@@ -64,7 +59,28 @@ const mainStack = new NvidiaFraudDetectionBlueprint(
   },
 );
 
-mainStack.addDependency(trainingImageRepo);
+// Triton inference server and training image builder
+// Requires NGC_API_KEY environment variable (from .env file)
+const ngcApiKey = process.env.NGC_API_KEY;
+if (!ngcApiKey) {
+  throw new Error("NGC_API_KEY environment variable is required. Set it in .env file.");
+}
+
+const tritonImageBuilder = new TritonImageBuilderStack(
+  app,
+  "NvidiaFraudDetectionImageBuilder",
+  {
+    env: env,
+    tritonEcrRepoName: "triton-fraud-detection",
+    trainingEcrRepoName: "nvidia-training-repo",
+    ngcApiKey: ngcApiKey,
+    githubRepoUrl: "https://github.com/atroyanovsky/TW-sample-financial-fraud-detection-with-nvidia",
+    githubBranch: "main",
+    importExistingRepos: true, // Set to false for fresh deployments
+  },
+);
+
 mainStack.addDependency(sagemakerExecutionRole);
 mainStack.addDependency(sagemakerNotebookRole);
 mainStack.addDependency(tarExtractorStack);
+mainStack.addDependency(tritonImageBuilder);

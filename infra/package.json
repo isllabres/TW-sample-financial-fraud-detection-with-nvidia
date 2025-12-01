@@ -21,9 +21,11 @@
   },
   "dependencies": {
     "@aws-quickstart/eks-blueprints": "1.17.2",
+    "@types/dotenv": "^6.1.1",
     "aws-cdk-lib": "2.204.0",
     "cdk-nag": "2.37.13",
     "constructs": "10.4.2",
+    "dotenv": "^17.2.3",
     "requirements": "2.0.2"
   }
 }

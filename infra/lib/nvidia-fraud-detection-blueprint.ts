@@ -98,8 +98,7 @@ export class NvidiaFraudDetectionBlueprint extends cdk.Stack {
       serviceAccountPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3ReadOnlyAccess')]
     });
 
-    // TODO: Update this to your repository URL
-    const repoUrl = "https://github.com/aws-samples/TW-sample-financial-fraud-detection-with-nvidia";
+    const repoUrl = "https://github.com/atroyanovsky/TW-sample-financial-fraud-detection-with-nvidia";
 
     const addons = [
       new blueprints.addons.AwsLoadBalancerControllerAddOn(),
