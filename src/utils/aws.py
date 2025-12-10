@@ -6,6 +6,7 @@ import boto3
 
 def get_cfn_output(stack_name, output_key):
     try:
+        cfn_client = boto3.client('cloudformation')
         response = cfn_client.describe_stacks(StackName=stack_name)
         outputs = response['Stacks'][0]['Outputs']
         for output in outputs:
@@ -23,6 +24,7 @@ def get_cfn_output(stack_name, output_key):
 
 def get_inference_host():
     try:
+        elb_client = boto3.client('elbv2', region_name="us-east-1")
         response = elb_client.describe_load_balancers()["LoadBalancers"]
         
         for elb in response:
