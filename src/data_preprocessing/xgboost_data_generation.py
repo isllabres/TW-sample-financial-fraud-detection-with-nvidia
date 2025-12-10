@@ -13,6 +13,13 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from category_encoders import BinaryEncoder
 
+import sys
+
+# Ensure src directory is in path for config import
+_src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _src_dir not in sys.path:
+    sys.path.insert(0, _src_dir)
+
 from config import DataConfig, default_config
 
 
