@@ -1,9 +1,10 @@
 """SageMaker training job management for fraud detection GNN model."""
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 import boto3
+from IPython.display import clear_output
 
 
 @dataclass
@@ -211,7 +212,7 @@ exec torchrun --standalone --nnodes=1 --nproc_per_node=1 /app/main.py --config /
     def poll(self):
         return poll_training_status(self.training_job_name)
 
-from IPython.display import clear_output
+
 def poll_training_status(job_name):
     sagemaker_client = boto3.client('sagemaker')
     

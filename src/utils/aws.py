@@ -1,7 +1,3 @@
-import os
-import sys
-import json
-import time
 import boto3
 
 def get_cfn_output(stack_name, output_key):

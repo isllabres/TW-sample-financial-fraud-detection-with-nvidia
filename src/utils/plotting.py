@@ -2,6 +2,8 @@ import os
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+
 
 def print_tree(directory, prefix=""):
     """Recursively prints the directory tree starting at 'directory'."""
@@ -144,3 +146,75 @@ def summarize_graph(gnn_dir):
         'test': {'users': test_num_users, 'merchants': test_num_merchants, 'transactions': test_num_transactions, 'fraud': test_num_fraud},
         'features': {'user': user_features, 'merchant': merchant_features, 'edge': edge_features}
     }
+
+
+def extract_subgraph(full_data, edge_indices, gnn_data_dir):
+    """
+    Extract a subgraph containing only the specified edges and their connected nodes.
+    
+    Args:
+        full_data: Full test graph data from load_hetero_graph()
+        edge_indices: List of edge indices to include
+        gnn_data_dir: Path to GNN data directory
+    
+    Returns:
+        Subgraph data dict ready for inference
+    """
+    # Get edge data
+    edge_index = full_data['edge_index_user_to_merchant']  # shape (2, num_edges)
+    edge_attr = full_data['edge_attr_user_to_merchant']    # shape (num_edges, 38)
+    
+    # Extract selected edges
+    selected_edge_index = edge_index[:, edge_indices]
+    selected_edge_attr = edge_attr[edge_indices, :]
+    
+    # Find unique users and merchants in selected edges
+    selected_users = np.unique(selected_edge_index[0, :])
+    selected_merchants = np.unique(selected_edge_index[1, :])
+    
+    # Create mapping from old IDs to new contiguous IDs
+    user_id_map = {old_id: new_id for new_id, old_id in enumerate(selected_users)}
+    merchant_id_map = {old_id: new_id for new_id, old_id in enumerate(selected_merchants)}
+    
+    # Remap edge indices to new contiguous IDs
+    remapped_edge_index = np.zeros_like(selected_edge_index)
+    for i in range(selected_edge_index.shape[1]):
+        remapped_edge_index[0, i] = user_id_map[selected_edge_index[0, i]]
+        remapped_edge_index[1, i] = merchant_id_map[selected_edge_index[1, i]]
+    
+    # Extract node features for selected nodes
+    x_user = full_data['x_user'][selected_users, :]
+    x_merchant = full_data['x_merchant'][selected_merchants, :]
+    
+    # Build subgraph data
+    subgraph = {
+        'x_user': x_user,
+        'x_merchant': x_merchant,
+        'feature_mask_user': full_data['feature_mask_user'],
+        'feature_mask_merchant': full_data['feature_mask_merchant'],
+        'edge_index_user_to_merchant': remapped_edge_index,
+        'edge_attr_user_to_merchant': selected_edge_attr,
+        'edge_feature_mask_user_to_merchant': full_data['edge_feature_mask_user_to_merchant'],
+    }
+    
+    return subgraph
+
+def create_batch_samples(full_data, batch_size, num_samples, gnn_data_dir):
+    """Create multiple subgraph samples of a given batch size."""
+    num_edges = full_data['edge_index_user_to_merchant'].shape[1]
+    samples = []
+    
+    for _ in range(num_samples):
+        # Randomly select batch_size edges
+        edge_indices = np.random.choice(num_edges, size=min(batch_size, num_edges), replace=False)
+        subgraph = extract_subgraph(full_data, edge_indices, gnn_data_dir)
+        samples.append(subgraph)
+    
+    return samples
+
+def print_subgraph_stats(subgraph, label=""):
+    """Print statistics about a subgraph."""
+    num_users = subgraph['x_user'].shape[0]
+    num_merchants = subgraph['x_merchant'].shape[0]
+    num_edges = subgraph['edge_index_user_to_merchant'].shape[1]
+    print(f"{label}: {num_edges} transactions, {num_users} users, {num_merchants} merchants")
