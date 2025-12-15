@@ -116,8 +116,22 @@ def prepare_and_send_inference_request(data, host="localhost", http_port=8000):
     
     return result
 
-def load_hetero_graph(gnn_data_dir):
+def load_hetero_graph(gnn_data_dir, partition):
     """
+    Load a heterogeneous graph from preprocessed CSV files.
+
+    Args:
+        gnn_data_dir: Base directory containing the GNN data.
+        partition: Data partition to load (e.g., 'train', 'test').
+
+    Returns:
+        dict: A dictionary containing:
+            - x_<node>: Node features as np.float32 arrays
+            - feature_mask_<node>: Feature masks as np.int32 arrays
+            - edge_index_<edge>: Edge indices as np.int64 arrays
+            - edge_attr_<edge>: Edge attributes as np.float32 arrays
+            - edge_feature_mask_<edge>: Edge feature masks as np.int32 arrays
+            - edge_label_<edge>: Edge labels as DataFrames (if present)
     Reads:
       - All node CSVs from nodes/, plus their matching feature masks (<node>_feature_mask.csv)
         If missing, a mask of all ones is created (np.int32).
@@ -126,7 +140,7 @@ def load_hetero_graph(gnn_data_dir):
           *_attr.csv  -> edge_attr_<edge>  (np.float32)
           *_label.csv -> exactly one -> edge_label_<edge> (DataFrame)
     """
-    base = os.path.join(gnn_data_dir, "test_gnn")
+    base = os.path.join(gnn_data_dir, f"{partition}_gnn")
     nodes_dir = os.path.join(base, "nodes")
     edges_dir = os.path.join(base, "edges")
 
