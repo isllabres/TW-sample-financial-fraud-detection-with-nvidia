@@ -92,7 +92,11 @@ export LD_LIBRARY_PATH=/usr/local/cuda/compat:$LD_LIBRARY_PATH
 
 echo "Setup complete. Launching training..."
 
-# D. Run the actual training command
+# D. Patch NVIDIA main.py to enable error logging (the original silently swallows exceptions)
+echo "Patching main.py to enable error logging..."
+sed -i 's/except Exception as e:/except Exception as e:\\n        import traceback\\n        traceback.print_exc()\\n        logging.error(str(e))/' /app/main.py || echo "Patch failed, continuing anyway"
+
+# E. Run the actual training command
 # We use exec to replace the shell process with torchrun
 exec torchrun --standalone --nnodes=1 --nproc_per_node=1 /app/main.py --config /opt/ml/input/data/config/training_config.json
 """
