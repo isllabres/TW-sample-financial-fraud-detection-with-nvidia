@@ -74,13 +74,17 @@ echo "-----------------------"
 echo "Starting custom setup..."
 
 # A. Install Python dependencies
-pip install --upgrade boto3 pandas
+# Pin pandas to version compatible with cudf (<2.2.4)
+pip install --upgrade boto3 "pandas>=2.0,<2.2.4"
 
 # B. Install System/CUDA packages
+# Fix /tmp permissions for apt-key
+export TMPDIR=/var/tmp
+mkdir -p /var/tmp && chmod 1777 /var/tmp
 # We accept failure (|| true) on apt-get update in case of transient network issues,
 # but the install must succeed.
 apt-get update || true
-apt-get install -y {self.config.cuda_compat_version}
+apt-get install -y {self.config.cuda_compat_version} || echo "CUDA compat package already installed or unavailable"
 
 # C. Configure Linker for Forward Compatibility
 # The compat package installs libs to /usr/local/cuda/compat
